@@ -1,0 +1,156 @@
+---
+title: "MDGP-Scaling-Algorithm"
+output: rmarkdown::html_vignette
+bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/research-institute-for-nature-and-forest.csl
+vignette: >
+  %\VignetteIndexEntry{MDGP-Scaling-Algorithm}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(fig.width=7,fig.height=5, 
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(landscapeScaling)
+library(terra)
+```
+## Spatial Scaling of Categorical Data 
+The purpose of the “landscapeScaling” package is to provide a method and the supporting functions to upscale categorical raster data. The recommended method is the multi-dimensional grid-point (mdgp) scaling algorithm @Gann_2019. This algorithm generates a new classification scheme on the basis of user desired class label precision of mixed classes and representativeness of the scaled class across the landscape of interest. The scaling output provides scaled categorical raster maps with mixed classes, a corresponding continuous raster with information retention calculations for each scaled grid cell and class-specific and landscape-scale mean and standard deviation of compositional information retention.
+
+## Conceptual Background
+Categorical raster data sets often require up-scaling or aggregation to a lower spatial resolution to make them compatible with other data sets or the scale of analysis. Despite validity of classification schemes for a limited range of spatial scales, most data aggregation algorithms for categorical data are insensitive to scale dependence of the classification scheme. This leads to high, uncontrolled and most often unknown loss of compositional information at the scaled grid cell scale, while potentially extending the high-resolution classification scheme beyond its valid scale range.
+
+Here we define the compositional information retention when scaling a high-resolution data set to a lower aggregated form with the Czekanowski Index:
+
+$$IR_{c} = \sum_{i-1}^{N} min(P_{i}smp, P_{i}scaled)$$ 
+$IR_{c}$ is the compositional information retention; $P_{i}smp$ is the proportion of class $i$ of the high-resolution grid within the scaled grid cell, and $P_{i}scaled$ is the proportion of class $i$ retained in the scaled grid cell label. The loss of information for majority- and nearest-neighbor rule aggregation are demonstrated for a small subset of a 9 x 9 grid cell landscape aggregated with a scale factor of 3 and 9.  
+
+
+![Figure 1 Compositional information loss when upscaling categorical data while maintaining the high-resolution classification scheme. Richness of the original landscape is three (classes a,b and c). Aggregation with the majority rule and nearest-neighbor rule and a scale factor of 3 and 9 leads to high information loss not accounting for any mixed classes. Adapted from @Gann_Richards_2022.](figures/Figure-infoLoss.png){ width=75% }
+
+
+## Multi-Dimensional Grid-Point Scaling
+
+The MDGP-Scaling algorithm aggregates categorical data while simultaneously generating a non-hierarchical, representative, classification system for the aggregated spatial scale. The scaled data consistently preserves information at a significantly higher rate than other aggregation algorithms that do not account for classification scheme dependence (e.g., majority rule, nearest-neighbor rule).
+
+The algorithm controls for information loss with the parameter $parts$, which relates to the scaled class-label precision of mixed classes. The larger the parameter (the more parts), the more classes will be generated with increasing precision of class-label components in the scaled class labels. The number of potential classes is determined by the richness of the original raster, and the precision parameter $parts$. Setting $parts$ to 1 (precision = 100%) is equal to the most commonly used alternative method of majority (plurality) rule. 
+
+![Figure 2 Multi-dimensional grid points generated for class-label precisions ranging from 100% (parts = 1) to 20% (parts = 5). As richness of the original landscape increases the dimensionality of the multi-dimensional grid points increases (blue box). Adopted from @Gann_2019.](figures/Figure-gridPointsMDGP.png){ width=85% }
+
+Scaling the small three class example landscape in Fig.1 with a scale factor of 9 (all 81 grid cells are replaced by 1 scaled grid cell) and the 1-part (precision = 100%, the majority-rule), 2-part (precision = 50%), 3-part (precision = 33.33%), and 4-part (precision = 25%) precision solutions generate the respective multi-dimensional grid points. For each precision level, the scaled cell assigned to the grid point that maximizes $IR_{c}$. Comparison across all solutions indicates the maximum information retained for the given precision level. 
+
+![Figure 3 Multi-dimensional grid points generated for label precisions ranging from 100% (parts = 1) to 25% (parts = 4) (top to bottom). Richness of the original landscape is three (classes a,b and c). The scaled class label list for each precision level (LabelList) is the enumerated list of all grid points. The solution that maximizes categorical information retention $IR_{c}$ for each grid-point solution is emphasized in bold. The last column summarizes the grid-point information the grid cell is assigned. Maximum $IR_{c}$ increases with precision. Adopted from @Gann_Richards_2022.](figures/Figure-infoLossMDGP.png){ width=75% }
+
+
+Consdering the representativeness of a scaled class across the scaled landscape (study area), in addition to the class label precision parameter $parts$ the representativeness threshold parameter $rpr-threshold$ determines which scaled grid-point classes are retained. A third parameter $monotypic-threshold$ determines the threshold for class abundance to be considered a monotypic class and to be retained in the final classification scheme even when present at less than the representativeness threshold across the landscape.  
+
+## Procedure for MDGP-Scaling
+
+The functions for MDGP-Scaling can be divided into two types of functions. The vignette explores the low-level functions that follow a step-wise procedure of the scaling process. The high-level function that nests several functions to produce a scaled product from the raw categorical raster input is the 'mdgp_scale_raster' function.
+
+First we load a neutral landscape that had been generated with the mid-point replacement algorithm in the NLMR package [@NLMR]. The landscape has three classes (richness) with a geometric class abundance distribution and a spatial aggregation of 0. For demonstration purpose we first subset the original raster to the lower left chunk of 90,000 grid cells (300 by 300 cells).
+
+```{r}
+# load categorical raster data set and plot
+r <- terra::rast(system.file("extdata/nlm_mid_geom_r3_sa0.tif", package = "landscapeScaling"))
+
+# set the three class color scheme
+clr <- c('#332288','#44AA99','#DDCC77')
+
+# plot the original categorical raster
+terra::plot(r, col=clr,mar=c(1.5,1.5,0.75,5))
+
+# define a subset extent to encompass the lower left 300 by 300 cells (for demo purpose) 
+sub_ext <- terra::ext(0,300,0,300)
+
+# add the extent outline to the plot (white outline)
+terra::plot(sub_ext, border='white',lwd=2,add=TRUE)
+```
+
+Figure 4 The original raster with three classes and the subset extent in the lower left corner (outline in white).
+
+```{r}
+# subset the landscape and plot
+r_sub <- terra::crop(r,sub_ext)
+terra::plot(r_sub,col=clr,mar=c(1.5,1.5,0.75,5))
+```
+
+Figure 5 The subset of the categorical raster.   
+
+#### Scaling Process Steps
+
+(1) Generate the scaled grid with the 'scale_grid' function applying a scale factor of 15. First the lower left corner of the 15 by 15 grid cells will be generated.
+```{r}
+LL_pnts <- scale_grid(r_sub,scale_factor=15)
+head(LL_pnts)
+terra::plot(r_sub,col=clr,mar=c(1.5,1.5,0.75,5))
+terra::plot(vect(LL_pnts,geom=c("x","y")),pch=3,col='#EEEEEE',add=TRUE)
+```
+
+Figure 6  The subset of the categorical raster and the scaled grid cell origin (lower left corners) 
+
+(2) Generate the relative abundance of original classes for a specific scale factor using the 'relative_abundance_scaled_grid' function. The lower left corner of of each of the 15 by 15 scaled grid cells is generated, followed by the tabulation of relative abundance of the high-resolution classes within each scaled grid cell. The x and y coordinates of the lower left corner for each scaled grid cell and the relative abundance for each cell are returned as data frame.
+```{r}
+rel_abund <- relative_abundance_scaled_grid(r_sub,class_field='cover',scale_factor=15)
+head(rel_abund)
+```
+  
+(3) Classify the relative abundance of each scaled grid cell to a list of multi-dimensional grid points that are generated from the class label precision parameter $parts$ and the landscape richness (number of classes). The 'mdgp_scale' function requires the argument $parts$ for the class label precision, the representativeness threshold $prp-threshold$, and the monotypic class threshold $monotypic-threshold$. A set of multi-dimensional grid points is generated for the selected precision level and the richness of the original raster layer. Then each scaled grid cell is classified to the grid point that maximizes information retention. The function returns for each scaled grid cell the original class abundance, the lower left corner coordinate (x_y), scaled class label and the corresponding information retention as a data frame.
+```{r}
+# classify relative abundance samples to multi-dimensional grid points with a 33.3% class label precision and a 10 percent representativeness threshold and a monotypic class threshold of 90%
+mdgp_result <- mdgp_scale(rel_abund,parts=3,rpr_threshold=10,monotypic_threshold=90)
+head(mdgp_result)
+```
+
+(4) Convert the classified points and the corresponding location-specific information retention and summarize information retention at the class-level and across the scaled landscape with the function 'scaling_result_to_raster'.
+```{r}
+# convert classified points and location-specific information retention to raster
+mdgp_raster <- scaling_result_to_raster(mdgp_result,class_name_field='class_name',scale_factor=15)
+
+# plot the scaled map
+clr_scale <- c('#E69F00','#56B4E9','#009E73','#F0E442','#0072B2','#D55E00')
+terra::plot(mdgp_raster[[1]],col=clr_scale,mar=c(1.5,1.5,1,8))
+```
+
+Figure 7 The scaled categorical raster with a new scaled classification scheme.  
+
+```{r}
+# plot information retention of the scaled map
+terra::plot(mdgp_raster[[2]],col=gray.colors(20,start=0.1,end=1),mar=c(1.5,1,1,8))
+```
+
+Figure 8 Information retention raster at the scaled grid cell level.
+
+A third list with two objects returns the class-specific mean and standard deviation of information retention as a data frame and the landscape scale aggregated mean and standard deviation as a list. 
+
+```{r}
+# print the class-specific and landscape scale summary statistics 
+print(mdgp_raster[[3]])
+```
+
+### Results for the Entire Landscape
+
+The next two figures present the scaling results for the full landscape when applying a with scale factor of 5 (Fig. 9) and 15 (Fig. 10) for three precision levels of 100%, 33.3% and 20%.  
+
+![Figure 9 Neutral landscape generated with nlme mid-point displacement algorithm. Richness of the landscape is three (classes A,B and C) with a geomtric class distribution and an aggregation factor of 0.0, scaled with a scale factor of 5 and class label precision ranging from 100% (parts=1) to 33,3% (parts=3) and 20% (parts=5). Circle size displays absolute scale of class proportions (Prop_AS) across all plots; colour rendered as relative scale of class proportions (Prop_RS) within each plot. Small black dots in the terneray plots indicate that the potential grid point was not realized at the aggregated scale. Class labels are composed of class name and nominal percent representativeness. Adopted from @Gann_2019.](figures/Figure-LS-SF5.png){ width=90% }
+
+
+Scaling the full landscape with a scale factor of 15 and three precision levels of 100%, 33.3% and 20%.
+
+![Figure 10 Neutral landscape generated with nlme mid-point displacement algorithm. Richness of the landscape is three (classes A,B and C) with a geomtric class distribution and an aggregation factor of 0.0, scaled with a scale factor of 15 and class label precision ranging from 100% (parts=1) to 33,3% (parts=3) and 20% (parts=5). Circle size displays absolute scale of class proportions (Prop_AS) across all plots; colour rendered as relative scale of class proportions (Prop_RS) within each plot. Small black dots in the terneray plots indicate that the potential grid point was not realized at the aggregated scale. Class labels are composed of class name and nominal percent representativeness. Adopted from @Gann_2019.](figures/Figure-LS-SF15.png){ width=90% }
+
+## Aknowledgements
+
+This package generously relies on functions from the R packages terra [@terra], compositions [@compositions], and partitions [@partitions].
+
+## References {-}
+
+<div id="refs"></div>
+
+

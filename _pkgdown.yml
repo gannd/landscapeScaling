@@ -1,0 +1,12 @@
+---
+title: "Landscape Scaling of Categorical Raster Data"
+author: "Daniel Gann"
+output: html_document
+---
+url: https://gannd.github.io/landscapeScaling/
+template:
+  bootstrap: 5
+  bootswatch: yeti
+
+development:
+  mode: auto

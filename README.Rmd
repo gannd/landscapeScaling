@@ -1,0 +1,115 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# landscapeScaling
+
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/gannd/landscapeScaling/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gannd/landscapeScaling/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+The purpose of the "landscapeScaling" package is to provide methods and functions to upscale categorical raster data. The recommended method is the multi-dimensional grid-point (mdgp) scaling algorithm. It generates a new classification scheme on the basis of user desired class label precision of mixed classes and representativeness of the scaled class across the landscape of interest. The scaling output includes scaled categorical raster maps with mixed classes, a corresponding continuous raster with information retention  calculations for each scaled grid cell and class-specific and landscape-scale information retention mean and standard deviation. The alternative method available in the package that does not modify the classification scheme is the majority (plurality) rule.
+
+## Installation
+
+You can install the development version of landscapeScaling from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("gannd/landscapeScaling")
+```
+```{r setup}
+library(landscapeScaling)
+library(terra)
+```
+
+
+## Example
+
+For demonstration purpose we will load a package provided landscape with three classes and first subset the original raster to the lower left chunk of 90,000 grid cells (300 by 300 cells).
+
+```{r}
+# three class color scheme
+clr <- c('#332288','#44AA99','#DDCC77')
+
+# scaled color scheme
+clr_scale <- c('#E69F00','#56B4E9','#009E73','#F0E442','#0072B2','#D55E00')
+
+# load categorical raster data set and plot
+r <- terra::rast(system.file("extdata/nlm_mid_geom_r3_sa0.tif", package = "landscapeScaling"))
+terra::plot(r, col=clr,mar=c(1.5,1.5,0.75,5))
+
+# generate subset extent to the lower left 300 by 300 cells (demo purpose) and add to plot
+sub_ext <- terra::ext(0,300,0,300)
+terra::plot(sub_ext, border='white',lwd=2,add=TRUE)
+```
+
+The original raster with three classes and the subset extent in the lower left corner (outline in white).
+
+```{r}
+# subset the landscape and plot 
+r_sub <- terra::crop(r,sub_ext)
+terra::plot(r_sub,col=clr,mar=c(1.5,1.5,0.75,5))
+```
+
+The subset of the categorical raster.   
+
+#### Scaling Process Steps
+
+(1) Generate the scaled grid with the "scale_grid" function applying a scale factor of 15. First the lower left corner of the 15 by 15 grid cells will be generated.
+```{r}
+LL_pnts <- scale_grid(r_sub,scale_factor=15)
+head(LL_pnts)
+terra::plot(r_sub,col=clr,mar=c(1.5,1.5,0.75,5))
+terra::plot(vect(LL_pnts,geom=c("x","y")),pch=3,col='#EEEEEE',add=TRUE)
+```
+
+The subset of the categorical raster and the scaled grid cell origin (lower left corners) 
+
+(2) Generate relative abundance for the subset for a scale factor of 15. First the lower left corner of the 15 by 15 grid cells will be generated. The relative abundance for each of the 400 scaled grid cells and the relative abundances are returned as a data frame.
+```{r}
+rel_abund <- relative_abundance_scaled_grid(r_sub,class_field='cover',scale_factor=15)
+head(rel_abund)
+```
+  
+(3) Classify the relative abundance of each scaled grid cell to a list of multi-dimensional grid points that are generated from the class label precision parameter $parts$ and the landscape richness (number of classes). The mdgp_scale" function requires the argument $parts$ for the class label precision, the representativeness threshold $prp-threshold$, and the monotypic class threshold $monotypic-threshold$. First multi-dimensional grid points are gnerated, then each grid cell is classified to the grid point that maximizes information retention.
+```{r}
+# classify relative abundance samples to multidimensional grid points with a 33.3% class label precision and a 10 percent representativeness threshold and a monotypic class threshold of 90%
+mdgp_result <- mdgp_scale(rel_abund,parts=3,rpr_threshold=10,monotypic_threshold=90)
+head(mdgp_result)
+```
+
+(4) Convert classified points to raster and location-specific information retention and summarize information retention at the class-level and across the scaled landscape with the function scaling_result_to_raster().
+```{r}
+# convert classified points and location-specific information retention to raster
+mdgp_raster <- scaling_result_to_raster(mdgp_result,class_name_field='class_name',scale_factor=15)
+
+# plot the scaled map
+terra::plot(mdgp_raster[[1]],col=clr_scale,mar=c(1.5,1.5,1,8))
+```
+
+The scaled categorical raster with scaled classification scheme.  
+
+```{r}
+# plot information retention of the scaled map
+terra::plot(mdgp_raster[[2]],col=gray.colors(20,start=0.1,end=1),mar=c(1.5,1,1,8))
+```
+
+Information retention raster at the scaled grid cell level.
+
+```{r}
+# print the class-specific and landscape scale summary statistics 
+print(mdgp_raster[[3]])
+```

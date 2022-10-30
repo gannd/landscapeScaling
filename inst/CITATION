@@ -1,0 +1,14 @@
+citHeader("To cite landscapeScaling in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "Quantitative spatial upscaling of categorical information: The multi-dimensional grid-point scaling algorithm",
+  author   = as.person("Daniel Gann"),
+  journal  = "Methods in Ecology and Evolution",
+  year     = 2019,
+  volume   = 10,
+  number   = 12,
+  pages    = 2090-2104,
+  doi      = "10.1111/2041-210X.13301",
+  textVersion = "Gann, Daniel (2019). Quantitative spatial upscaling of categorical information: The multi-dimensional grid-point scaling algorithm. Methods in Ecology and Evolution, 10(12), 2090-2104, https://doi.org/10.1111/2041-210X.13301"
+)

@@ -135,7 +135,7 @@ classification scheme. Richness of the original landscape is three
 (classes a,b and c). Aggregation with the majority rule and
 nearest-neighbor rule and a scale factor of 3 and 9 leads to high
 information loss not accounting for any mixed classes. Adapted from
-<span class="citation">Gann &amp; Richards (2022)</span>.</p>
+<span class="citation">Gann and Richards (2022)</span>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -180,7 +180,7 @@ the enumerated list of all grid points. The solution that maximizes
 categorical information retention <span class="math inline">\(IR_{c}\)</span> for each grid-point solution is
 emphasized in bold. The last column summarizes the grid-point
 information the grid cell is assigned. Maximum <span class="math inline">\(IR_{c}\)</span> increases with precision. Adopted
-from <span class="citation">Gann &amp; Richards (2022)</span>.</p>
+from <span class="citation">Gann and Richards (2022)</span>.</p>
 </div>
 <p>Consdering the representativeness of a scaled class across the scaled
 landscape (study area), in addition to the class label precision
@@ -200,11 +200,11 @@ step-wise procedure of the scaling process. The high-level function that
 nests several functions to produce a scaled product from the raw
 categorical raster input is the ‘mdgp_scale_raster’ function.</p>
 <p>First we load a neutral landscape that had been generated with the
-mid-point replacement algorithm in the NLMR package <span class="citation">(Sciaini <em>et al.</em>, 2018)</span>. The landscape
-has three classes (richness) with a geometric class abundance
-distribution and a spatial aggregation of 0. For demonstration purpose
-we first subset the original raster to the lower left chunk of 90,000
-grid cells (300 by 300 cells).</p>
+mid-point replacement algorithm in the NLMR package <span class="citation">(Sciaini et al. 2018)</span>. The landscape has three
+classes (richness) with a geometric class abundance distribution and a
+spatial aggregation of 0. For demonstration purpose we first subset the
+original raster to the lower left chunk of 90,000 grid cells (300 by 300
+cells).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load categorical raster data set and plot</span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/nlm_mid_geom_r3_sa0.tif"</span>, package <span class="op">=</span> <span class="st">"landscapeScaling"</span><span class="op">)</span><span class="op">)</span></span>
@@ -383,39 +383,41 @@ percent representativeness. Adopted from <span class="citation">Gann
 <h2 id="aknowledgements">Aknowledgements<a class="anchor" aria-label="anchor" href="#aknowledgements"></a>
 </h2>
 <p>This package generously relies on functions from the R packages terra
-<span class="citation">(Hijmans, 2022)</span>, compositions <span class="citation">(van den Boogaart <em>et al.</em>, 2022)</span>, and
-partitions <span class="citation">(Hankin, 2006)</span>.</p>
+<span class="citation">(Hijmans 2022)</span>, compositions <span class="citation">(van den Boogaart, Tolosana-Delgado, and Bren
+2022)</span>, and partitions <span class="citation">(Hankin
+2006)</span>.</p>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-Gann_2019" class="csl-entry">
-Gann D. (2019). Quantitative spatial upscaling of categorical
-information: The multi-dimensional grid-point scaling algorithm. Methods
-in Ecology and Evolution 10 (12): –14. <a href="https://doi.org/10.1111/2041-210X.13301" class="external-link">https://doi.org/10.1111/2041-210X.13301</a>.
+Gann, Daniel. 2019. <span>“Quantitative Spatial Upscaling of Categorical
+Information: The Multi-Dimensional Grid-Point Scaling Algorithm.”</span>
+<em>Methods in Ecology and Evolution</em> 10 (12): –14. <a href="https://doi.org/10.1111/2041-210X.13301" class="external-link">https://doi.org/10.1111/2041-210X.13301</a>.
 </div>
 <div id="ref-Gann_Richards_2022" class="csl-entry">
-Gann D. &amp; Richards J. (2022). <a href="">Scaling of classification
-systems — effects of class precision on detection accuracy from medium
-resolution multispectral data – in press</a>. Landscape Ecology.
+Gann, Daniel, and Jennifer Richards. 2022. <span>“<a href="">Scaling of
+Classification Systems — Effects of Class Precision on Detection
+Accuracy from Medium Resolution Multispectral Data – in
+Press</a>.”</span> <em>Landscape Ecology</em>.
 </div>
 <div id="ref-partitions" class="csl-entry">
-Hankin R.K.S. (2006). Additive integer partitions in r. Journal of
-Statistical Software, Code Snippets 16.
+Hankin, R. K. S. 2006. <span>“Additive Integer Partitions in r.”</span>
+<em>Journal of Statistical Software, Code Snippets</em> 16 (May).
 </div>
 <div id="ref-terra" class="csl-entry">
-Hijmans R.J. (2022). Terra: Spatial data analysis. <a href="https://CRAN.R-project.org/package=terra" class="external-link">https://CRAN.R-project.org/package=terra</a>.
+Hijmans, Robert J. 2022. <em>Terra: Spatial Data Analysis</em>. <a href="https://CRAN.R-project.org/package=terra" class="external-link">https://CRAN.R-project.org/package=terra</a>.
 </div>
 <div id="ref-NLMR" class="csl-entry">
-Sciaini M., Fritsch M., Scherer C. &amp; Simpkins C.E. (2018). NLMR and
-landscapetools: An integrated environment for simulating and modifying
-neutral landscape models in r. Methods in Ecololgy and Evolution 00:
-1–9. <a href="https://doi.org/10.1111/2041-210X.13076" class="external-link">https://doi.org/10.1111/2041-210X.13076</a>.
+Sciaini, Marco, Matthias Fritsch, Cedric Scherer, and Craig E. Simpkins.
+2018. <span>“NLMR and Landscapetools: An Integrated Environment for
+Simulating and Modifying Neutral Landscape Models in r.”</span>
+<em>Methods in Ecololgy and Evolution</em> 00: 1–9. <a href="https://doi.org/10.1111/2041-210X.13076" class="external-link">https://doi.org/10.1111/2041-210X.13076</a>.
 </div>
 <div id="ref-compositions" class="csl-entry">
-van den Boogaart K.G., Tolosana-Delgado R. &amp; Bren M. (2022).
-Compositions: Compositional data analysis. <a href="https://CRAN.R-project.org/package=compositions" class="external-link">https://CRAN.R-project.org/package=compositions</a>.
+van den Boogaart, K. Gerald, Raimon Tolosana-Delgado, and Matevz Bren.
+2022. <em>Compositions: Compositional Data Analysis</em>. <a href="https://CRAN.R-project.org/package=compositions" class="external-link">https://CRAN.R-project.org/package=compositions</a>.
 </div>
 </div>
 </div>

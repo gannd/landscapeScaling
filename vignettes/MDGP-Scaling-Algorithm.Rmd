@@ -2,6 +2,7 @@
 title: "MDGP-Scaling-Algorithm"
 output: rmarkdown::html_vignette
 bibliography: references.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/research-institute-for-nature-and-forest.csl
 vignette: >
   %\VignetteIndexEntry{MDGP-Scaling-Algorithm}
   %\VignetteEngine{knitr::rmarkdown}

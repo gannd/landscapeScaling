@@ -26,17 +26,10 @@ jobs:
           extra-packages: rcmdcheck
 
       - uses: r-lib/actions/check-r-package@v2
-<<<<<<< HEAD
         with:
           args: 'c("--no-manual", "--as-cran")'
           error-on: '"error"'
           check-dir: '"check"'
-=======
-          with:
-            args: 'c("--no-manual", "--as-cran")'
-            error-on: '"error"'
-            check-dir: '"check"'
->>>>>>> 701059b02b4e0cec1175769af59dc170e283d330
 
       - name: Show testthat output
         if: always()

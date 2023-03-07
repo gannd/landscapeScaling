@@ -32,8 +32,8 @@ scale_grid <- function(x,scale_factor){
   mapRefSclExt <- terra::ext(x)
   
   # generate lower left corner coordinates for scaled raster grid points
-  xLst <- seq(mapRefSclExt$xmin,mapRefSclExt$xmax-scale_factor*terra::res(x)[1],scale_factor)
-  yLst <- seq(mapRefSclExt$ymin,mapRefSclExt$ymax-scale_factor*terra::res(x)[2],scale_factor)
+  xLst <- seq(mapRefSclExt$xmin,mapRefSclExt$xmax-scale_factor*terra::res(x)[1],scale_factor*terra::res(x)[1])
+  yLst <- seq(mapRefSclExt$ymin,mapRefSclExt$ymax-scale_factor*terra::res(x)[2],scale_factor*terra::res(x)[2])
   pntDF <- expand.grid(xLst,yLst)
   names(pntDF) <- c('x','y')
   

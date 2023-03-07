@@ -31,7 +31,7 @@ relative_abundance_scaled_grid <- function(x,class_field,scale_factor,verbose=FA
   res_y <- terra::res(x)[2]
   
   # number of original raster classes
-  richness <- length(terra::cats(x)[[1]]$value)
+  richness <- length(terra::cats(x)[[1]][[1]])
   
   # initiate data frame to collect relative abundance for low resolution grid cell coordinates
   relAbn <- matrix(nrow=richness, ncol=length(refPntsXY[,1]))

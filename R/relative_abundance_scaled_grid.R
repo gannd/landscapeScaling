@@ -67,7 +67,7 @@ relative_abundance_scaled_grid <- function(x,class_field,scale_factor,verbose=FA
       curSmp[is.na(curSmp)] <- 0
 
       # replace current sample vector in matrix
-      relAbn[,pnt] <- curSmp[,3]
+      relAbn[,pnt] <- curSmp$Freq
     }
   }
   # rotate data matrix

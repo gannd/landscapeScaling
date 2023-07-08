@@ -52,12 +52,11 @@ relative_abundance_scaled_grid <- function(x,class_field,scale_factor,verbose=FA
 
     # extract sample data value block
     vB <- terra::extract(x, ext,cells=TRUE)
+    
+    # get frequency distribution of value block and convert to data frame
     vBFreqDF <- as.data.frame(table(vB[,2]))
     names(vBFreqDF) <- c(class_field,'Freq')
-
-    # get frequency distribution of value block and convert to data frame
-    vBFreqDF <- as.data.frame(table(vB))
-
+    
     if (length(vBFreqDF[,1]) < 1){
       # if no classes are present (all NA) replace current sample vector in matrix with zeros
       relAbn[,pnt] <- rep(0,richness)

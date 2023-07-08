@@ -51,7 +51,9 @@ relative_abundance_scaled_grid <- function(x,class_field,scale_factor,verbose=FA
     ext <- terra::ext(cellCur$x,cellCur$x+scale_factor*res_x,cellCur$y,cellCur$y+scale_factor*res_y)
 
     # extract sample data value block
-    vB <- terra::extract(x, ext)
+    vB <- terra::extract(x, ext,cells=TRUE)
+    vBFreqDF <- as.data.frame(table(vB[,2]))
+    names(vBFreqDF) <- c(class_field,'Freq')
 
     # get frequency distribution of value block and convert to data frame
     vBFreqDF <- as.data.frame(table(vB))

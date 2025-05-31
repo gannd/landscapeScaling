@@ -4,6 +4,7 @@
 #' @param parts integer that sets the class label precision of scaled classes. OPTIONS: 1 = 100%, 2 = 50%, 3 = 33.3%, 4 = 25%, 5 = 20%  
 #' @param rpr_threshold integer setting the representativeness threshold, the  minimum percentage of a mixed class in the scaled landscape to be retained in the classification scheme
 #' @param monotypic_threshold integer that sets the minimum percentage of a class to be considered monotypic and therefore retained in the scaled classification scheme 
+#' @param ir_threshold integer that sets the minimum cell-level information retention threshold in percent before a class gets assigned to class 'OTHER'; default = 1
 #' @param verbose bolean; if TRUE progress will be printed in console; default = FALSE
 #' 
 #' @return A data frame with first column containing the scaled category IDs followed by the original class columns with relative class abundance in percent. The last three columns are x_y = concatenated x and y coordinates, prc_inf_agr = percent information retained for each scaled grid cell, and class_name = the class labels of the scaled classes
@@ -22,14 +23,23 @@
 #' 
 #' head(rel_abund)
 #' 
-#' # classify relative abundance samples to multi-dimensional grid points 
+#' # Ex. 1: classify relative abundance samples to multi-dimensional grid points 
 #' # class-label precision = 33.3% (parts=3), 
-#' # minimum representativeness = 10% and a monotypic threshold 90% 
+#' # minimum representativeness = 10%, monotypic threshold 90%, information retention threshold 0% (default) 
 #' mdgp_result <- mdgp_scale(rel_abund,parts=3,rpr_threshold=10,monotypic_threshold=90)
 #' 
 #' head(mdgp_result)
+#'
+#' 
+#' # Ex.2: classify relative abundance samples to multi-dimensional grid points with information retention threshold at 50%
+#' mdgp_result <- mdgp_scale(rel_abund,parts=3,rpr_threshold=10,monotypic_threshold=90,ir_threshold=50)
+#' 
+#' head(mdgp_result)
+#' 
+#' # print the class distribution class frequencies
+#' table(mdgp_result$class_name)
 
-mdgp_scale <- function(x,parts,rpr_threshold,monotypic_threshold,verbose=FALSE){
+mdgp_scale <- function(x,parts,rpr_threshold,monotypic_threshold,ir_threshold=1,verbose=FALSE){
   
   print(paste0('number of cells: ',cellCount <- length(x[,1])))
   
@@ -99,7 +109,8 @@ mdgp_scale <- function(x,parts,rpr_threshold,monotypic_threshold,verbose=FALSE){
 			i <- 1
 			
 			# determine grid points to be removed in current cycle: all 0, minimum percentage that is not in monotypic list (gpIDFnl)
-			gpRm <- as.integer(c(grdIdxFrq$grdIdx[grdIdxFrq$grdPntPrc == 0],grdIdxFrq$grdIdx[grdIdxFrq$grdPntPrc == min(grdIdxFrq$grdPntPrc[grdIdxFrq$grdPntPrc !=0 & !grdIdxFrq$grdIdx %in% gpIDFnl])]))
+			gpRmCnd <- grdIdxFrq[!grdIdxFrq$grdIdx %in% as.numeric(gpIDFnl),]
+			gpRm <- as.integer(c(grdIdxFrq$grdIdx[grdIdxFrq$grdPntPrc == 0],gpRmCnd$grdIdx[gpRmCnd$grdPntPrc == min(gpRmCnd$grdPntPrc[gpRmCnd$grdPntPrc !=0])]))
 			gp <- gp[!(rownames(gp) %in% gpRm),]
 			print(paste('number of grid points remaining',length(gp[,1]),sep=': '))
 			
@@ -112,6 +123,9 @@ mdgp_scale <- function(x,parts,rpr_threshold,monotypic_threshold,verbose=FALSE){
 		} else { i <- 2}
 	}
 	
+	# reclassify samples below ir_threshold to 'ZZ_OTHER'
+	smpClsFnl$cls[smpClsFnl$prc_inf_agr < ir_threshold] <- max(as.numeric(smpClsFnl$cls)) + 1
+	
 	# check length samples in == classified samples out
 	if (length(smpClsFnl[,1]) != nrow(x)){ print('error in grid point scaling - not all grid cells were classified') }
 	else {
@@ -120,10 +134,17 @@ mdgp_scale <- function(x,parts,rpr_threshold,monotypic_threshold,verbose=FALSE){
 		grdPntsFnl <- as.data.frame(apply(round(gp,0), 1, function(x) class_label(x)))
 		names(grdPntsFnl) <- 'class_name'
 		
+		# add other class
+		o <- data.frame(class_name = 'ZZZ_OTHER') 
+		grdPntsFnl <- rbind(grdPntsFnl,o)
+		
 		# merge classified samples with class names
 		smpClsFnl <- merge(smpClsFnl,grdPntsFnl, by.x='cls', by.y='row.names', sort=FALSE)
 		rownames(smpClsFnl) <- smpClsFnl$x_y
 		smpClsFnl <- data.frame(lapply(smpClsFnl, function(x) if(is.numeric(x)) round(x, 3) else x)) 
+		
+		# set information retention of the 'ZZZ_OTHER' class to 0
+		smpClsFnl$prc_inf_agr[smpClsFnl$class_name == 'ZZZ_OTHER'] <- 0
 		
 		return(smpClsFnl)		
 	}	

@@ -53,16 +53,16 @@ scaling_result_to_raster <- function(scaling_result,class_name_field,proj_info=N
   
   # re-factor class ID
   newClsIDs <- as.data.frame(unique(scaling_result[class_name_field]))
-  newClsIDs$ID <- c(1:nrow(newClsIDs)) 
-  names(newClsIDs) <- c(class_name_field,'id')
+  newClsIDs <- as.data.frame(newClsIDs[order(newClsIDs$class_name),]);names(newClsIDs) <- class_name_field
+  newClsIDs$ID <- c(1:nrow(newClsIDs))
   
   # merge new class IDs
   scaling_result <- merge(scaling_result, newClsIDs, by=class_name_field, sort=FALSE)
   
   # create raster
-  r_class <- terra::rast(as.data.frame(scaling_result)[, c('x','y','id')],type='xyz',crs=proj_info)
-  rat <- unique(scaling_result[c('id', class_name_field)])
-  levels(r_class) <- rat
+  r_class <- terra::rast(as.data.frame(scaling_result)[, c('x','y','ID')],type='xyz',crs=proj_info)
+  #rat <- unique(scaling_result[c('id', class_name_field)])
+  levels(r_class) <- newClsIDs[c('ID',class_name_field)]
   
   # convert information retention to raster
   r_information_retention <- terra::rast(as.data.frame(scaling_result)[, c('x','y','prc_inf_agr')],type='xyz',crs=proj_info)

@@ -1,0 +1,14 @@
+---
+title: "MDGP-Scaling"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(landscapeScaling)
+```

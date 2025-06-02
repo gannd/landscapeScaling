@@ -34,7 +34,7 @@ devtools::install_github("gannd/landscapeScaling")
 ``` r
 library(landscapeScaling)
 library(terra)
-#> terra 1.8.50
+#> terra 1.8.54
 ```
 
 ## Example

@@ -1,6 +1,6 @@
 Package: landscapeScaling
 Title: Scaling Algorithms for Categorical Raster Data
-Version: 0.0.0.9000
+Version: 0.0.1.1000
 Authors@R: 
     person(given = "Daniel", 
     family = "Gann", 
@@ -32,3 +32,4 @@ Suggests:
     knitr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Config/Needs/website: rmarkdown
